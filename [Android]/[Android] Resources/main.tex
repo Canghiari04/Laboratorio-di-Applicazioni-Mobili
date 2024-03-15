@@ -1,0 +1,148 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{floatflt,epsfig}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry} 
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s][\color{green!50!black}]{<!--}{-->},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red},
+  keywordstyle=\color{orange},
+  commentstyle=\color{green!50!black},
+  basicstyle=\small\ttfamily,
+  frame=single, 
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  showstringspaces=false,
+  captionpos=b,
+}
+
+\lstdefinelanguage{Java}{
+  keywords={abstract,assert,boolean,break,byte,case,catch,char,class,const,continue,default,do,double,else,enum,extends,false,final,finally,float,for,goto,if,implements,import,instanceof,int,interface,long,native,new,null,package,private,protected,public,return,short,static,strictfp,super,switch,synchronized,this,throw,throws,transient,true,try,void,volatile,while},
+  morekeywords={[2]System,out},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{blue}\bfseries,
+  keywordstyle={[2]\color{orange}\bfseries},
+  commentstyle=\color{green!70!black},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single, 
+  captionpos=b
+}
+
+
+\titleformat{\section}
+{\LARGE\bfseries}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\Large\bfseries}{\thesection}{1em}{}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\section*{Resources}
+\large
+Android è progettato per essere eseguito su un innumerevole insieme di dispositivi. In questo ambito ogni applicazione sviluppata dovrebbe attuare \textit{feature} dinamiche, rendendo adattiva la \textit{user interface} rispetto alle configurazioni dello schermo.\vspace*{14pt}\\
+Come già accennato un'applicazione Android dovrebbe essere eseguita su una eterogenità di dispositivi, ognuno di essi con le proprie caratteristiche. Per riuscire nell'intento possono essere adeguati due approcci principali:
+\begin{enumerate}
+    \itemsep0em
+    \renewcommand*{\labelenumi}{-}
+    \item \textbf{Soluzione tradizionale}, adottare tutte le molteplici alternative. Tuttavia questo si traduce in un abuso di costrutti condizionali, rendendo il codice di difficile lettura; inoltre occorre ricompilare il progetto ogni qualvolta dovesse presentarsi la necessità di variare il \textit{Layout} oppure qualora aggiunti nuovi \textit{package}
+    \item \textbf{Soluzione Android}, separare il codice dalle \textit{risorse}. Rispetto al paradigma descritto si usufruisce dell'approccio dichiarativo XML affinchè possano essere definite le risorse
+\end{enumerate}
+Prima di addentrarsi all'interno della composizione delle cartelle che caratterizzino un progetto è bene stabilire cosa sia una \textit{risorsa}.\vspace*{7pt}\\
+\textit{Definizione}\\
+Una \textit{risorsa} è tutto ciò che non sia codice.\vspace*{7pt}\\
+Pur di rispettare la definizione precedente è necessario che si susseguano tre condizioni:
+\begin{enumerate}
+    \itemsep0em
+    \renewcommand*{\labelenumi}{-}
+    \item Separare gli aspetti visivi dagli aspetti gestionali. In tal senso si prosegue mediante il paradigma di "buon codice", ossia separare ciò che possa essere ritenuto associabile alla \textit{business logic} da ciò che contraddistingue la \textit{user interface}
+    \item Provvedere a garantire un numero elevato di \textit{features} che possano coprire il più ampio insieme di dispositivi
+    \item Ricompilare solamente quando strettamente necessario
+\end{enumerate}
+Solitamente è preferita la soluzione Android, data soprattutto dalla capacità del framework di rilevare tutte le caratteristiche configurative del dispositivo, associandone la risorse appropiate, e dalla facilità con cui sia possibile aggiungere nuove resources per supportare un'ulteriore categoria di device.\vspace*{14pt}\\
+All'interno di un qualsiasi progetto le risorse sono destinate all'interno della directory \textbf{res}; si tratta di una gerarchia già predisposta per i molteplici package inseriti.
+
+\subsection*{Resources Definition}
+Le risorse sono inizializzate mediante il metodo \textbf{dichiarativo} espresso dai file \textbf{XML}, in cui ognuna di esse possiede un proprio nome e identificativo.\vspace*{7pt}
+\begin{lstlisting}[language=XML, title=Dichiarazione delle risorse mediante file XML]
+<resources> 
+    <string name="hello">Hello World!</string>
+    <string name="labelButton">Insert your name</string>
+</resources>
+\end{lstlisting}
+Tali risorse possono essere acquisite tramite la \textbf{classe R}, il cui funzionamento simula un \textit{collante} tra il codice e il documento XML; si tratta di un file generato e gestito automaticamente, ricreato qualora dovessero essere riportate delle modifiche.\vspace*{7pt}\\
+Applica il design pattern \textit{Singleton}, pertanto l'intero progetto sviluppato fonda sulla singola istanza della classe. Quindi, ricapitolando, \textbf{R} contiene tutti gli identificativi delle resources poste all'interno della directory \textit{res}.\vspace*{7pt}
+\begin{lstlisting}[language=JAVA, title=Definizione della classe R]
+public finale class R {
+    public static final class string {
+        public static final int hello=0x7040001;
+        public static final int labelButton=0x7040005;
+    }    
+}
+\end{lstlisting}
+L'\textit{ID} definito precedentemente è composto da due sezioni esplicative, definite come segue:
+\begin{enumerate}
+    \itemsep0em
+    \renewcommand*{\labelenumi}{-}
+    \item Il \textbf{type}, ossia il tipo della risorsa, ad esempio string, menu, layout ...
+    \item Il \textbf{name}, a sua volta contraddistinto dal \textit{filename} e dal \textit{value} posto all'interno del documento XML 
+\end{enumerate}
+Proseguendo, esistono due modalità di accesso al contenuto delle risorse:
+\begin{enumerate}
+    \itemsep0em
+    \renewcommand*{\labelenumi}{-}
+    \item Accesso tramite XML, in cui è attuata una sintassi simile a
+    \begin{center}
+        \textit{@[<package\_name>:]<resource\_type>/<resource\_name>}
+    \end{center}
+    Il \textit{@[<package\_name>:]}, oltre ad essere una sezione opzionale, definisce il nome del \textit{package} in cui la risorsa è allocata. Il \textit{<resource\_type>} è il nome del \textit{tipo} della risorsa. Il \textit{<resource\_name>} rappresenta il \textit{filename} della risorsa.\vspace*{7pt}\\
+    Di seguito è proposto un titolo esemplificativo, in maniera tale che possa essere definito nel migliore dei modi il concetto espresso prima.
+    \begin{lstlisting}[language=XML, title=Accesso al contenuto delle risorse mediante XML]
+<LinearLayout>
+    <TextView android:id="@+id/label1"
+        android:text="@string/labelText" android:textcolor="@android:color/black"/>
+    <Button android:id="@+id/button1" android:text="@string/labelButton"
+        android:background="@color/my_red"/>
+</LinearLayout>>
+    \end{lstlisting}
+    Da esempio sono differenti i punti salienti in cui occorre soffermarsi. Nella dichiarazione della \textit{TextView} si nota l'utilizzo della sintassi \textit{<resource\_type>/<resource\_name>}, definita in \textit{android:text="@string/labelText"}, mentre, sempre nella medesima sezione, si evidenzia la presenza di un value in cui è espresso il \textit{@[<package\_name>:]}, in \textit{android:textcolor="@android:color/black"}. Contrariamente, all'interno del tag \textit{Button} è visualizzata la denominazione di un ulteriore \textit{package name}, in questo case ritrae un pacchetto ideato dallo sviluppatore e non dato built-in da Android, come da nomenclatura precedente.
+    \item Accesso tramite \textit{codice Java/Kotlin}, dove la sintassi adeguata promuove
+    \begin{center}
+        \textit{[package\_name]R.resource\_type.resource\_name}
+    \end{center}
+    Nuovamente, il \textit{package\_name} definisce il \textit{package} in cui la risorsa è allocata. Il \textit{resource\_type} è il nome del \textit{tipo} della risorsa. Il \textit{resource\_name} è la denominazione del \textit{filename}.
+\end{enumerate}
+
+\subsection*{Values}
+METTERE SOLAMENETE ESEMPI, MAGARI COMMENTARLI, DA SLIDE 20 --> SLIDE 30
+\end{document}
