@@ -73,14 +73,22 @@
 
 Le \textbf{activities} rappresentano una parte fondamentale all'interno di \textit{Android Studio}, data la loro importanza in questo contesto. Spesso le \textit{activities} sono raffigurate come il primo contatto tra il sistema software realizzato e l'utente, da cui sono sviluppati metodi o funzioni in grado di poter acquisire dati provenienti da agenti esterni. Articolando l'introduzione, le stesse sono note anche secondo la denominazione \textbf{screen state}, ossia un fotogramma in grado di intrappolare tutto ciò che riesca a contraddistinguere il preciso momento in cui si trovi lo screen del dispositivo. \vspace*{14pt}\\
 Concludendo \textit{Android} stabilisce la sua operatività mediante uno \textbf{stack} di activity, infatti le medesime applicazioni si basano sul susseguirsi di insiemi di \textit{attività}.\vspace*{14pt}\\
-Le \textbf{activity} devono essere dichiarate all'interno del \textbf{Manifest}, contenitore di informazioni estremamente importanti a livello di sistema operativo; pertanto, occorre che siano descritte all'interno del Manifest prima che siano runnate, anche se solitamente, a seconda della versione di \textit{Android Studio}, tutto ciò è definito automaticamente.\vspace*{14pt}\\
-RIPORTARE ESEMPIO SLIDE 5\vspace*{14pt}\\
+Le \textbf{activity} devono essere dichiarate all'interno del \textbf{Manifest}, contenitore di informazioni estremamente importanti a livello di sistema operativo; pertanto, occorre che siano descritte all'interno del Manifest prima che siano runnate, anche se solitamente, a seconda della versione di \textit{Android Studio}, tutto ciò è definito automaticamente.
+\begin{lstlisting}[language=XML, title=Dichiarazione di un'activity all'interno del Manifest]
+<application ...>
+  <activity android:name=".MainActivity" android:exported="true">
+    <intent-filter>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+  </activity>
+</application>
+\end{lstlisting}
 Il \textit{Manifest} indica ciò che il sistema operativo possa visionare in riferimento all'applicazione che si trovi in stato \textit{running}; proprio per questa principale motivazione, la sezione \textit{XML} riportata precedentemente, definisce quali e come utilizzare le attività formulate al suo interno.
 
 \subsection*{Activity Lifecycle} 
 Le \textbf{activity} nel corso del loro \textit{lifecycle}, attraversano una sequenzialità di \textit{stati}, adottati per differenti contesti, soprattutto data la volontà di distinguere quale delle differenti operazioni debba essere svolta. Infatti l'operazione, o meglio definito \textit{elemento computazionale}, raffigura l'unico item in grado di mantenere in vita l'applicazione circoscritta, per cui una gestione dei propri stati indica una sezione imprescindibile.\vspace*{14pt}\\
-METTERE IMMAGINE DELLA SLIDE 8\vspace*{14pt}\\
-Come da immagine soprastante, si evidenziano un totale di cinque stati, di cui \textit{destroyed} non è da considerarsi tale. In relazione, si prosegue attraverso una semplice descrizione di ognuno di essi, la lettura scaturisce sin dal momento in cui l'attività non risulti essere in memoria.
+Come da immagine sottostante, si evidenziano un totale di cinque stati, di cui \textit{destroyed} non è da considerarsi tale. In relazione, si prosegue attraverso una semplice descrizione di ognuno di essi, la lettura scaturisce sin dal momento in cui l'attività non risulti essere in memoria.
 \begin{enumerate}
   \renewcommand{\labelenumi}{-}
   \item \textbf{Created}, in questo istante l'\textit{activity} non risulta ancora visibile, si tratta di una fase precedente al \textit{running}, ma non alla compilazione
@@ -89,6 +97,9 @@ Come da immagine soprastante, si evidenziano un totale di cinque stati, di cui \
   \item \textbf{Paused}, si verifica l'\textit{overlaid} di altre attività, un esempio concreto potrebbe essere un'\textit{interrupt} generata da uno specifico evento caratterizzato da una maggiore priorità, il quale necessita di assimilare un livello e numero superiore di risorse, da cui scaturisce il fenomeno che provocherà lo stato descritto
   \item \textbf{Stopped}, in comune allo stato precedente, l'attività non può eseguire alcuna sezione di codice oppure ricevere dati, in aggiunta non risulta più visibile poichè portata in "secondo piano"
 \end{enumerate}   
+\begin{center}
+  \includegraphics[width=0.7\textwidth]{foto1.png}
+\end{center}
 Detto ciò, l'insieme di caratteristiche riportate è dovuto all'avvenire di certi eventi, per lo più provocati da specifici metodi; secondo questa breve deduzione, si intuisce la presenza di molteplici funzioni che possano provocare i differenti passaggi di stato. Anche in questa circostanza suddivisi in:
 \begin{enumerate}
   \itemsep0em 
@@ -101,12 +112,18 @@ Detto ciò, l'insieme di caratteristiche riportate è dovuto all'avvenire di cer
   \item \textbf{onStop()}, l'attività non è più visibile e di conseguenza interagibile, spesso fenomeno causato da due fattori specifici; la prima causa potrebbe essere dedotta da uno "spostamento" in \textit{background} di un'activity in favore di una corrisposta, oppure l'attività è in procinto di essere distrutta
   \item \textbf{onDestroy()}, funzione attuata qualora il sistema necessiti dello spazio in memoria oppure, con maggiore semplicità, qualche elemento ha chiamato il metodo circoscritto sulla precisa attività
 \end{enumerate}   
-Tuttavia è bene definire che i molteplici passaggi di stato sono controllati in minima parte dallo sviluppatore, da cui si evince l'importanza di saper almeno riconoscere il comportamento di un'attività durante il proprio \textit{lifecycle}.\vspace*{14pt}\\
-
+Tuttavia è bene definire che i molteplici passaggi di stato sono controllati in minima parte dallo sviluppatore, da cui si evince l'importanza di saper almeno riconoscere il comportamento di un'attività durante il proprio \textit{lifecycle}.
 \subsection*{Logs with LogCat}
 Questa breve sezione si concentra sulla tematica denominata \textbf{logcat window}, usufruito come un vero e proprio strumento che possa aiutare qualsiasi sviluppatore durante l'implementazione di certe funzionalità, attuato principalmente durante attività di \textit{debugging}; ad esempio potrebbero essere aggiunti alcuni messaggi all'applicazione sviluppata mediante l'estensione della \textit{classe log}.\vspace*{14pt}\\
-La \textit{classe log} predispone un'elevato numero di metodi che possano definire l'importanza del messaggio di log visualizzato.\\
-METTERE IMMAGINE SLIDE 23
+La \textit{classe log} predispone un'elevato numero di metodi che possano definire l'importanza del messaggio di log visualizzato.
+\begin{lstlisting}[language=JAVA, title=Dichiarazione dei log]
+Log.v ("LABEL", "message")    // VERBOSE
+Log.d ("LABEL", "message")    // DEBUG
+Log.i ("LABEL", "message")    // INFORMATION
+Log.w ("LABEL", "message")    // WARNING
+Log.e ("LABEL", "message")    // ERROR
+Log.wtf ("LABEL", "message")  // SHOULD NEVER HAPPEN IN LIFE
+\end{lstlisting}
 
 \subsection*{Recreating Activities}
 Qualora si navigasse tra le differenti \textit{activities} che compongono l'applicazione in questione, il sistema, tendenzialmente, adotta un approccio distruttivo dell'attività per poi, successivamente, crearne una nuova istanza. Un andamento simile provoca un sovraccarico a livello operativo, necessita uno strumento in grado di ricreare l'attività senza che essa sia sottoposta all'iter precedente. In tal senso è adoperato un \textit{bundle}, denominato \textbf{instance state}, responsabilizzato della memorizzazione delle \textit{activities}, da cui l'applicativo avrà la possibilità di riesumarne l'oggetto ogni qual volta ne avesse la possibilità.\vspace*{14pt}\\
@@ -115,9 +132,25 @@ Il salvataggio dei dati circoscritti avviene tramite l'\textit{override} di due 
   \itemsep0em 
   \renewcommand{\labelenumi}{ }
   \item \textbf{onSaveInstanceState()}, generalmente metodo richiamato poco prima che l'\textit{activity} sia posta in \textit{stopped}
-  \item METTERE IMMAGINE SLIDE 25
+  \begin{lstlisting}[language=JAVA, title=Salvataggio dei dati poco prima dello stato stopped]
+static final String STATE_SCORE = "playerScore";
+@Override
+public void onSaveInstanceState (Bundle savedInstanceState) {
+  super.onSaveInstanceState (savedInstanceState);
+  savedInstanceState.putInt(
+    STATE_SCORE, mCurrentScore
+  );
+}
+  \end{lstlisting}
   \item \textbf{onRestoreInstanceState()}, funzione richiamata poco dopo che l'attività sia posta in \textit{started}
-  \item METTERE IMMAGINE SLIDE 26 
+  \begin{lstlisting}[language=JAVA, title=Salvataggio dei dati poco dopo dello stato started]
+@Override
+public void onRestoreInstanceState (Bundle savedInstanceState) {
+  // Call the superclass to restore the views
+  super.onRestoreInstanceState (savedInstanceState);
+  mCurrentScore = savedInstanceState.getInt(STATE_SCORE);
+}
+  \end{lstlisting}
 \end{enumerate}
 In alternativa, i due metodi elencati, possono essere adeguati anche durante la fase di creazione dell'\textit{activity}. 
 
@@ -131,5 +164,4 @@ Generalmente la modellazione di task avviene per precise funzioni, da cui per og
 
 \subsection*{Contexts}
 Un'attività è fortemente connessa ad un contesto, descritto come un punto di interazione tra app e sistema operativo, da cui qualunque entità ha la possibilità di richiamare le sue funzioni.\\
-\\ METTERE SEZIONE CODICE IN CUI SI VISUALIZZA ACTIVITY CHE IMPLEMENTA LA CLASSE ASTRATTA CONTEXT 
 \end{document}
