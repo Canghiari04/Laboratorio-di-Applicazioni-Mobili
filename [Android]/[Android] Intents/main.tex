@@ -57,7 +57,6 @@
   captionpos=b
 }
 
-
 \titleformat{\section}
 {\LARGE\bfseries}{\thesection}{1em}{}
 
@@ -189,4 +188,52 @@ Proseguendo, la seconda problematica è inerente al ricevitore della richiesta. 
 </activity>
 \end{lstlisting}    
 Piccola peculiarità, è dettata dalla presenza dell'\textit{attribute} \textit{exported}; esso testimonia che l'\textit{activity} può essere invocata da ulteriori applicazioni. Proprio per tale ragione è necessario esplicitare quali \textit{intents} il componente sia in grado di manipolare.
+
+\subsection*{Intent with result}
+Individuati i campi principali che carattetterizzano un \textit{intent} e stabilito il paradigma a cui affidarsi, affinchè sia possibile gestire uno strumento di tale complessità, occorre definire come restituire dei risultati. Gli intenti possono essere formulati affinchè possano ricevere messaggi in risposta.\vspace*{7pt}\\
+Principalmente, le attività sono invocate per ottenere un risultato; tuttavia è bene distinguere quale sia l'entità in attesa di ricevere un riscontro, rispetto a colui che abbia il compito di formulare una risposta alla richiesta ricevuta. Per cui sono contraddistinti due attori, ossia: 
+\begin{enumerate}
+    \itemsep0em
+    \renewcommand{\labelenumi}{-}
+    \item \textbf{Sender side}, invoca la funzione \textit{startActivityForResult()} 
+    \begin{lstlisting}[language=JAVA, title=Sender acquisisce risultati da attività invocate]
+val ACTIVITY_CODE = 0 
+val intent: Intent = Intent(this, ActivityPrefiz::class.java)
+startActivityForResult(intent, ACTIVITY_CODE)
+...
+override fun onActivityResult
+    (requestCode: Int, resultCode: Int, data: Intent?) {
+
+}
+    \end{lstlisting}
+    Di seguito sono descritti alcuni step su cui occorre soffermarsi. Innanzitutto il \textit{sender} attua il metodo \textit{startActivityForResult()}, dove è dato in input lo stesso \textit{intent} dichiarato e inizializzato precedentemente; quest'ultimo passaggio è necessario per garantire al ricevitore la possibilità di sfruttare il \textit{"collante"}, pur di fornire le informazioni richieste. Proseguendo, qualora l'\textit{activity} completi le proprie operazioni, il mittente invoca la funzione \textit{onActivityResult()}, acquisendo, nello stesso ordine proposto dal metodo, un \textit{requestcode}, attuato per discernere sulla tipologia di risultato restituito, un \textit{resultcode}, codice in grado di stabilire la correttezza o meno della risposta ricevuta, ed infine i \textit{data}, ossia i campi extra dell'intento forniti dal destinatario
+    \item \textbf{Receiver side}, invoca il metodo \textit{setResult()}
+    \begin{lstlisting}[language=JAVA, title=Receiver fornisce dati rispetto alla richiesta ricevuta]
+val intent = getIntent()
+setResult(RESULT_OK, intent)
+intent.putExtra("response", "whatever yuo wanted")
+finish()
+    \end{lstlisting}
+    Da canto suo, il \textit{receiver} acquisisce l'\textit{intent} che abbia risvegliato l'\textit{activity} e va ad agire sul \textit{bundle} di riferimento, modificando i campi che lo contraddistinguono. Il risultato è restituito solamente se invocato il metodo \textit{finish()}
+\end{enumerate}
+Con l'avvento di \textbf{AndroidX}, i metodi \textit{startActivityForResult()} e \textit{onActivityResult()} sono stati accantonati per attuare e adeguare le \textbf{Activity Result API}. Le \textit{Activity Result API} forniscono i componenti per la registrazione, l'avvio e la gestione di un risultato una volta inviato dal sistema. Uno strumento del genere vanifica circostanze in cui il processo, conseguente ad un'\textit{attività}, sia eliminato a causa di situazioni di insufficienza di memoria.\vspace*{7pt}\\
+Per questo motivo, le \textit{Activity Result} registrano le \textit{callback} qualunque cosa accada, in maniera tale che siano usufruibili indipendentemente dal fatto che le attività e i processi siano ricreati oppure distrutti.\vspace*{7pt}\\
+In tal senso, è fornita un'API per la registrazione delle \textit{callback}; acquisendo un \textit{ActivityResultContract} e un \textit{ActivityResultCallback} è restituito un \textit{Launcher}, utilizzato per avviare l'attività circoscritta.\vspace*{7pt}\\
+A livello esemplificativo è possibile delineare
+\begin{lstlisting}[language=JAVA, title=Istanza di un launcher per le activities]
+val mLauncher: ActivityResultLauncher<String> = registerForActivitResult(
+        ActivityResultContracts.GetContent(),
+        ActivityResultCallback<Uri?>(){uri: Uri? -> /* handle the uri */}
+    )
+\end{lstlisting}
+\begin{enumerate}
+    \itemsep0em
+    \renewcommand{\labelenumi}{ } 
+    \item \textbf{GetContent()}, è un costruttore di default di contratti attuato per ottenere il contenuto di un risultato; in questo caso si tratterà di un \textit{Uri}, proveniente dall'attività richiamata
+    \item \textbf{registerForActivitResult()}, restituisce un \textit{launcher} che potrà essere conseguentemente utilizzato
+\end{enumerate}
+
+\subsection*{Android Permission System}
+Molto spesso intenti \textit{impliciti} demandano funzionalità che potrebbero violare la privacy dell'utente. In caso l'applicazione sviluppata richieda dati sensibili oppure azioni restrittive, occorre che sia formulata una richiesta relativa ai \textbf{permessi}.\vspace*{7pt}\\
+... 
 \end{document}

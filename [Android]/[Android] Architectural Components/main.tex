@@ -1,0 +1,281 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{fixltx2e}
+\usepackage{booktabs}
+\usepackage{float}  
+\usepackage{graphicx}
+\usepackage{floatflt,epsfig}
+\usepackage[margin=1in]{geometry} 
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s][\color{green!50!black}]{<!--}{-->},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red},
+  keywordstyle=\color{orange},
+  commentstyle=\color{green!50!black},
+  basicstyle=\small\ttfamily,
+  frame=single, 
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  showstringspaces=false,
+  captionpos=b,
+}
+
+\lstdefinelanguage{Java}{
+  keywords={abstract,assert,boolean,break,byte,case,catch,char,class,const,continue,default,do,double,else,enum,extends,false,final,finally,float,for,goto,if,implements,import,instanceof,int,interface,long,native,new,null,package,private,protected,public,return,short,static,strictfp,super,switch,synchronized,this,throw,throws,transient,true,try,void,volatile,while},
+  morekeywords={[2]System,out},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{blue}\bfseries,
+  keywordstyle={[2]\color{orange}\bfseries},
+  commentstyle=\color{green!70!black},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single, 
+  captionpos=b
+}
+
+
+\titleformat{\section}
+{\LARGE\bfseries}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\Large\bfseries}{\thesection}{1em}{}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\section*{Architectural Components}
+\large
+\textit{Android} mette a disposizione apposite librerie per l'attuazione dei \textit{design pattern}, da cui ne deriva l'insieme dei benefici che li contraddistinguono. Rispetto ai comuni linguaggi di programmazione, l'ambiente di sviluppo circoscritto risulta essere più stringente su questa tematica, atteggiamento dovuto principalmente dalla volontà di mantenere al meglio delle proprie capacità una certa retrocompatibilità.\vspace*{7pt}\\
+Da questo breve preambolo, nasce la necessità di organizzare e gestire il codice in maniera strutturale; richiesta che può essere unicamente soddisfatta mediante l'impiego dei \textit{design pattern architetturali}. Inoltre è presente un ulteriore layer di difficoltà, poichè i prodotti sviluppati non dipendono da una netta suddivisione tra \textit{client} e \textit{server}; l'intero contesto promuove una diretta suddivisione dell'applicazione in \textit{componenti}.\vspace*{7pt}\\
+Ad esempio, la condivisione di una foto allocata all'interno di un dispositivo necessita un'elevato numero di azioni, le quali potrebbero dare vita a differenti tematiche di \textit{dipendenza funzionale}; terminologia altamente pericolosa, dove un apparente errore potrebbe avere effetti disastrosi sull'intero sistema ideato.\vspace*{7pt}\\
+Rispetto a quanto detto è fondamentale sviluppare una solida architettura di \textit{decoupling}, in grado di assicurare che nessun componente sia strettamente dipendente ad altri. In relazione ad \textit{Android} sono presenti tre pattern principali, denominati come segue:
+\begin{itemize}[label = {-}]
+    \itemsep0em
+    \item \textbf{Model-View-Controller}
+    \item \textbf{Model-View-Presenter}
+    \item \textbf{Model-View-ViewModel}
+\end{itemize}
+Tipicamente sono attuati qualora l'applicazione divenga sempre più complessa, sviluppati in base alle caratteristiche del componente che la \textit{bussness logic} debba gestire.\vspace*{7pt}\\
+Prima di specificare ognuno di essi, è bene soffermarsi sulle peculiarità comuni.
+\begin{itemize}[label = {-}]
+    \itemsep0em
+    \item \textbf{Model}, indica complessivamente le informazioni statiche, a lora volta denominate \textit{domain logic}. Spesso, in ambiente di sviluppo \textit{Android}, sono definite impropriamente \textit{getter}
+    \item \textbf{View}, la \textit{User Interface}, ossia la modalità di gestione e di acquisizione dell'interazioni con l'utente
+    \item \textbf{Bussness logic}, logica che governa l'acquisizione e visualizzazione a schermo dei dati, sezione sovrapposta tra \textit{Model} e \textit{View}
+\end{itemize}
+Per facilitare la comprensione dei \textit{pattern architetturali} è identificata, a titolo esemplificativo, una semplice applicazione, la quale simula un utente desideroso di acquisire una bottiglia d'acqua. Il sistema è composto da una \textbf{activity\_main.xml}, a sua volta suddivisa in una \textit{textView} e in un \textit{button}; elaborato l'evento \textit{click} del bottone sarà popolata la \textit{textView}.\vspace*{7pt}\\
+Proseguendo, l'esempio sviluppa una classe elementare denominata \textit{Model}, la quale imita il comportamento di un \textit{database}, definita come segue.
+\begin{lstlisting}[language = JAVA]
+class Model {
+    private val data: String = "Water" // record all'interno del database fittizio
+
+    fun getData(): String {
+        return "Bottle of ${data}"
+    }
+}    
+\end{lstlisting} 
+Pertanto, esistono tre metodi principali affinchè l'utente possa acquisire la bottiglia d'acqua; del tutto coincidenti rispetto ai tre pattern narrati precedentemente.
+
+\subsection*{Model-View-Controller}
+In questa casistica il \textit{Controller} è la \textbf{sezione attiva}, ossia contiene al suo interno la \textit{bussness logic} di riferimento; mentre la \textit{View} e il \textit{Model} sono entità passive, non compiono alcuna mansione. Tipicamente si attua un paradigma simile qualora il progetto sviluppato sia di piccole dimensioni, garantendo un'estrema facilità di testing, dato che il \textit{Model} non possiede alcuna dipendenza.\vspace*{7pt}\\
+Tuttavia modifiche attuate al \textit{Controller} potrebbero riflettersi rispettivamente sia sulla \textit{View} che sul \textit{Model}; si evince, nella sua complessità, di un sistema dipendente. 
+Confrontando il \textit{pattern} con l'esempio proposto, l'utente compie la totalità delle azioni, in cui:
+\begin{center}
+    \textit{User goes to shop, User takes the water and User pays it}
+\end{center}
+Il \textit{Controller}, il quale sviluppa la \textit{bussness logic}, è posto all'interno di un'\textit{activity}, affinchè possa compiere le funzioni richieste.  
+\begin{lstlisting}[language = JAVA]
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val myModel: Model = Model()
+        val textView = findViewById<TextView>(R.id.textView)
+        val button = findViewById<Button>(R.id.button)
+        
+        button.setOnClickListener {
+            textView.text = myModel.getData()
+        }
+    }
+}
+\end{lstlisting} 
+Come da codice, è possibile osservare l'evidente grado di accoppiamento tra la \textit{View} e il \textit{Controller}, visualizzabili come un'unica entità; sicuramente una caratteristica simile non rispecchia l'obiettivo principale, ossia non è rispettata una suddivisione architetturale tra i vari componenti che possa isolarli da dipendenze reciproche.
+
+\subsection*{Model-View-Presenter}
+Si tratta di una nuova concezione del paradigma, in cui la sezione attiva coincide con la \textit{View}. Sicuramente, rispetto a quanto detto, è presente un livello astratto, in cui è incaricata un'entità di compiere determinate mansioni, senza che sia esplicitamente descritto il comportamento da attuare.\vspace*{7pt}\\
+In un contesto simile varia anche l'esempio proposto, ossia l'atteggiamento detenuto dall'utente è differente, in cui:
+\begin{center}
+    \textit{User goes to the bar and asks for a glass of water, then the waiter brings him the water}
+\end{center}
+Il cameriere simula il \textit{Presenter}, colui che è incaricato di svolgere la specifica mansione, senza che l'utente sappia effettivamente quale sia il suo operato.\vspace*{7pt}\\
+Proseguendo, il \textit{Presenter} raffigura un mediatore sovrapposto alla \textit{View}; per ogni \textit{View} corrisponde un solo \textit{Presenter} e viceversa. Il \textit{pattern} descritto è sviluppato tipicamente per progetti di medie dimensioni, garantendo, anche in questo caso, un'elevata facilità di testing, dato che il \textit{Model} non possiede alcuna dipendenza effettiva. Tuttavia, affinchè sia possibile garantire un \textit{pattern architetturale} simile, occorre che sia sviluppata un'interfaccia posta tra il \textit{Presenter} e la \textit{View}, in maniera tale che sia garantito un tramite comunicativo.
+\begin{lstlisting}[language = JAVA, title = Esempio implementativo di un Presenter]
+class Presenter (val appView: AppView) {
+        private lateinit var model: Model
+
+        private fun getModel(): Model {
+            if (! ::model.isInitialized)
+                model = Model()
+                
+            return model
+        }
+    }
+
+    fun getDataFromModel() {
+        appView.onGetData(getModel().getData()) // Richiamata l'interfaccia non la View specifica
+    }
+}
+\end{lstlisting}
+Rispetto alla sezione di codice riportata precedentemente, occorre stabilire due caratteristiche principali, contraddistinte come segue:
+\begin{itemize}[label = {-}]
+    \itemsep0em
+    \item All'interno del \textit{costruttore} è attuato il pattern \textit{Singleton} secondo il paradigma \textit{lazy initialitation}, ossia l'istanziazione del \textit{Model} è tardata fino a quando non sia strettamente necessario
+    \item Il secondo metodo, denominato \textit{getDataFromModel()}, da in pasto il \textit{Model} istanziato all'interfaccia sovrapposta tra il \textit{Presenter} e la \textit{View}, garantendo in questo modo un'azione mirata di disaccoppiamento tra le entità
+\end{itemize}
+\begin{lstlisting}[language = JAVA, title = Esempio implementativo di un'interfaccia sovrapposta tra il Presenter e la View]
+interface AppView {
+    fun onGetData(data: String) {
+        /* By default does nothing */
+    }
+}
+\end{lstlisting}
+Concludendo, l'approccio definito avrà delle ripercussioni sulla stessa logica attuata all'interno dell'attività; pertanto, di seguito, è riportato lo sviluppo della \textit{MainActivity}.
+\begin{lstlisting}[language = JAVA, title = Esempio implementativo di una MainActivity che adotti il pattern MVP]
+class MainActivity : AppCompatActivity(), AppView {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+       
+        /* Presenter richiede il Contesto in input */
+        val myPresenter: Presenter = Presenter(this) 
+        val button = findViewById<Button>(R.id.button)
+        button.setOnClickListener { myPresenter.getDataFromModel() }
+    }
+    
+    /* override della funzione, dato che estende l'interfaccia AppView */
+    override fun onGetData(data: String) {
+        val textView = findViewById<TextView>(R.id.textView)
+        textView.text = data
+    }
+}
+\end{lstlisting}
+
+\subsection*{Model-View-ViewModel}
+\textbf{MVVM} è il \textit{pattern architetturale} raccomandato per lo sviluppo di una qualsiasi applicazione \textit{Android}. Tuttavia, prima di definire concretamente le sue caratteristiche, è necessario stabilire alcuni punti cardine del discorso.
+\begin{itemize}[label = {-}]
+    \itemsep0em
+    \item \textbf{View-Model}, componente incaricato di memorizzare i dati relativi all'\textit{User Interface}, mediante un approccio che rispetti il \textbf{Lifecycle} dell'\textit{activities}. Per cui differenti sono i punti positivi di un componente simile, capace di ovviare ad azioni di salvataggio di istanze relative ad attività, qualora siano distrutte o ricreate, oppure separa la logica attuata all'\textit{UI} dalla visualizzazione dell'informazioni.\vspace*{7pt}\\
+    A livello implementativo sono definiti alcuni step a cui sottostare, dove si evidenzia:
+    \begin{lstlisting}[language = JAVA]
+class MyViewModel: ViewModel() {
+    private lateinit var value : String
+    fun getValue(): String {
+        /* Do stuff to retrieve the value */
+        return value
+    }
+}
+    \end{lstlisting}
+    Nuovamente, nell'esempio di codice proposto è possibile notare una specifica peculiarità, in cui \textit{MyViewModel} estende la classe \textit{ViewModel}; ciò avviene poichè il \textit{ViewModel} è attuato per osservare il \textit{lifecycle} dell'oggetto passato in input al componente \textbf{ViewModelProvider}.
+    \begin{lstlisting}[language = JAVA]
+val myViewModel: MyViewModel =
+    ViewModelProvider(this).get(MyViewModel::class.java)
+
+textView.text = myViewModel.getValue()
+    \end{lstlisting}
+    \item \textbf{LiveData}, accomunati dallo stesso concetto su cui fondano gli \textit{Observables}. Rappresentano classi di dati, le quali compiono \textit{mansioni notificanti}, per tutte le entità che \textit{osservino} le informazioni contenute in esse, qualora subiscano delle modifiche.\vspace*{7pt}\\
+    In tale ambito oggetti \textit{Observable} possiedono una lista nascosta, contenente l'insieme delle entità interessate ad acquisire feedback qualora determinati field dovessero essere modificati. Contrariamente, i \textit{LiveData}, come già descritto, sono \textit{Observables} basati sul paradigma \textit{LifeCycle Awareness}.\vspace*{7pt}\\
+    Il termine \textit{LifeCycle Awareness} deriva dallo sviluppo e dall'implementazione di un \textit{Observer} all'interno del \textit{LifeCycle} degli oggetti.
+    \begin{lstlisting}[language = JAVA]
+class MyObserver : DefaultLifecycleObserver {
+    override fun onResume(owner: LifecycleOwner) {
+        /* Do stuff onResume */
+    }
+
+    override fun onPause(owner: LifecycleOwner) {
+        /* Do stuff onPause */
+    }
+}
+
+myLifecycleOwner.getLifecycle().addObserver(MyObserver())
+    \end{lstlisting}
+    Proseguendo, i \textit{LiveData} sono componenti incaricati di notificare i propri \textit{osservatori} solamente se posti all'interno di uno \textit{stato attivo}; ciò potrebbe risultare piuttosto utile qualora le attività sviluppate siano orientate ai soli dati, senza che siano a conoscenza dello stato dei componenti interessati. Il meccanismo deve essere costruito affinchè possa contenere i dati correnti.\vspace*{7pt}\\
+    Tuttavia, i \textit{LiveData} non possono essere modificati, ossia al loro interno non è presente alcun \textit{setter} che possa svolgere una richiesta simile. Pertanto occorre implementare una \textit{MutableLiveData}, in grado di poter variare il proprio contenuto anche in fasi successive alla propria istanziazione.
+    \begin{lstlisting}[language = JAVA]
+val name: MutableLiveData<String> = MutableLiveData() 
+    \end{lstlisting}
+    Nonostante il punto negativo descritto, tipicamente i \textit{LiveData} sono istanziati all'interno del \textit{ViewModel}, ne consegue che gli stessi osservatori consistano principalmente in molteplici \textit{activities}, le quali acquisiscono il \textit{LiveData} di riferimento, immutabile oppure modificabile a seconda della casistica.
+\end{itemize} 
+Individuati gli elementi cardine su cui fonda il \textit{pattern architetturale}, il discorso vira direttamente sulle peculiarità di \textbf{MVVM}.\vspace*{7pt}\\
+La \textit{View} è la parte attiva, contenente la \textit{bussness logic}; \textit{ViewModel} possiede al suo interno l'insieme dei \textit{LiveData}, mentre il \textit{Model} rappresenta la \textit{parte passiva} dello schema. Si rinnova la facilità di testing anche per il pattern architetturale descritto, tipicamente sviluppato per applicazioni di grandi dimensioni.\vspace*{7pt}\\
+Introdotto il nuovo paradigma, varia di conseguenza anche l'esempio proposto, in cui:
+\begin{center}
+    \textit{User goes to vending machine and pays for a water, then the machine gives back the water}
+\end{center}
+Secondo una prospettiva generale, l'attitudine narrata si traduce in codice come segue.
+\begin{lstlisting}[language = JAVA]
+class MyViewModel() : ViewModel() {
+    private val model: Model by lazy { Model() } // Singleton
+    private val _liveValue: MutableLiveData<String> 
+                            by lazy { MutableLiveData<String>() }
+
+    /* Casts the private MutableLiveData with an immutable one */
+    val liveValue: LiveData<String> get() = _liveValue
+
+    fun getDataFromModel() {
+        /* Set the LiveData value, no matter who is observing */
+        liveValue.value = (model.getData())
+    }
+}
+\end{lstlisting}
+La caratteristica principale del codice proposto consiste nell'estensione della classe \textit{ViewModel}, dato che al suo interno sono contenuti tutti i \textit{LiveData} interessati; la stessa entità mantiene aggiornati i propri dati, indipendentemente da chi stia osservando, mantenendo, in questo modo, un livello contenuto di \textit{dipendencies}.
+\begin{lstlisting}[language = JAVA]
+class MainActivity : AppCompatActivity(){
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val textView = findViewById<TextView>(R.id.textView)
+        val myViewModel: MyViewModel = 
+            ViewModelProvider(this)[MyViewModel::class.java]
+
+        myViewModel.liveValue.observe(this)
+            { newValue -> textView.text = newValue }
+
+        val button = findViewById<Button>(R.id.button)
+        button.setOnClickListener{ myViewModel.getDataFromModel() }
+    }
+}
+\end{lstlisting}
+All'interno della \textit{MainActivity} si osserva perfettamente l'obiettivo del pattern, rendere l'\textit{attività} totalmente estrenea alla logica di acquisizione dei dati. È definita l'istanza \textit{MyViewModel}, affinchè possano essere restituiti i dati aggiornati oppure modificati, su cui è attuato l'\textit{observe}, in modo tale che possa associare i \textit{LiveData} al contenuto della \textit{textView}. Infine, mediante il \textit{button}, avviene il refresh istantaneo dei dati del \textit{Model}.
+
+
+\end{document}
