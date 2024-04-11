@@ -221,7 +221,7 @@ Per questo motivo, le \textit{Activity Result} registrano le \textit{callback} q
 In tal senso, è fornita un'API per la registrazione delle \textit{callback}; acquisendo un \textit{ActivityResultContract} e un \textit{ActivityResultCallback} è restituito un \textit{Launcher}, utilizzato per avviare l'attività circoscritta.\vspace*{7pt}\\
 A livello esemplificativo è possibile delineare
 \begin{lstlisting}[language=JAVA, title=Istanza di un launcher per le activities]
-val mLauncher: ActivityResultLauncher<String> = registerForActivitResult(
+val mLauncher: ActivityResultLauncher<String> = registerForActivityResult(
         ActivityResultContracts.GetContent(),
         ActivityResultCallback<Uri?>(){uri: Uri? -> /* handle the uri */}
     )
@@ -230,10 +230,41 @@ val mLauncher: ActivityResultLauncher<String> = registerForActivitResult(
     \itemsep0em
     \renewcommand{\labelenumi}{ } 
     \item \textbf{GetContent()}, è un costruttore di default di contratti attuato per ottenere il contenuto di un risultato; in questo caso si tratterà di un \textit{Uri}, proveniente dall'attività richiamata
-    \item \textbf{registerForActivitResult()}, restituisce un \textit{launcher} che potrà essere conseguentemente utilizzato
+    \item \textbf{registerForActivityResult()}, restituisce un \textit{launcher} che potrà essere conseguentemente utilizzato
 \end{enumerate}
 
 \subsection*{Android Permission System}
 Molto spesso intenti \textit{impliciti} demandano funzionalità che potrebbero violare la privacy dell'utente. In caso l'applicazione sviluppata richieda dati sensibili oppure azioni restrittive, occorre che sia formulata una richiesta relativa ai \textbf{permessi}.\vspace*{7pt}\\
-... 
+I \textit{permessi} sono tipicamente dichiarati all'interno del \textit{Manifest}, richiesti, nella maggioranza dei casi, durante il \textit{run-time} dell'applicazione.
+\begin{lstlisting}[language=XML]
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+\end{lstlisting}
+Definito il \textit{permesso} all'interno del \textit{Manifest}, la fase successiva comprende la richiesta dello stesso qualora sia runnata l'applicazione; ciò può avvenire tramite le \textit{Activity Result API}, attraverso l'utilizzo di un \textit{launcher}, che possa avviare l'attività, tendenzialmente visualizzata a video come un pop-up centrato, ed acquisire il risultato dettato dall'utente.
+\begin{lstlisting}[language=JAVA]
+val requestPermissionLauncher = registerForActivityResult(
+    ActivityResultContracts.RequestPermission()
+    ) {isGranted: Boolean -> 
+        if(isGranted) {
+            // Permission is granted
+        } else {
+            // Permission is denied
+        }
+    }
+\end{lstlisting}
+
+\subsection*{WebView}
+Una \textit{View} che mostri a video una \textit{web page} necessita di uno specifico permesso, denominato \textit{android.permission.INTERNET}, uno dei pochi che non richieda il riconoscimento durante \textit{runtime}. Riconosciuto, l'applicativo diviene un browser di piccole dimensioni, poichè permette la navigazione solo nel dominio dettato.\vspace*{7pt}\\
+\textit{Android} garantisce il funzionamento descritto mediante l'utilizzo delle \textbf{WebView}; è importante non confondere la realtà descritta rispetto alle tipiche funzionalità condotte tramite il \textit{browser}, in questa casistica le \textit{web pages} sono attuate solamente per la visualizzazione del contenuto delle stesse, senza alcuna azione secondaria di navigazione.\vspace*{7pt}\\
+Tipicamente, all'interno di una qualsiasi applicazione sviluppata, avviene l'\textit{override} del \textit{behavior} di ogni link all'interno della \textit{WebView} tramite un \textit{WebViewClient}, sviluppato come segue.
+\begin{lstlisting}[language=JAVA]
+webView.webViewClient = object: WebViewClient() {
+    override fun shouldOverrideUrlLoading(view: WebView?, 
+    request: WebResourceRequest?): Boolean {
+        if (request?.url?.host == Uri.parse(WEBSITE).host) {
+            // This is my website, let the webView handle it
+            return false
+        } else return super.shouldOverrideUrlLoading(view, request)
+    }
+}
+\end{lstlisting}
 \end{document}
