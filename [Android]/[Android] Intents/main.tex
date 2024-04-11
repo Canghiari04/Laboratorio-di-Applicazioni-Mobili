@@ -253,7 +253,7 @@ val requestPermissionLauncher = registerForActivityResult(
 \end{lstlisting}
 
 \subsection*{WebView}
-Una \textit{View} che mostri a video una \textit{web page} necessita di uno specifico permesso, denominato \textit{android.permission.INTERNET}, uno dei pochi che non richieda il riconoscimento durante \textit{runtime}. Riconosciuto, l'applicativo diviene un browser di piccole dimensioni, poichè permette la navigazione solo nel dominio dettato.\vspace*{7pt}\\
+Una \textit{View} che mostri a schermo una \textit{web page} necessita di uno specifico permesso, denominato \textit{android.permission.INTERNET}, uno dei pochi che non richieda il riconoscimento durante \textit{runtime}. Riconosciuto, l'applicativo diviene un browser di piccole dimensioni, poichè permette la navigazione solo nel dominio dettato.\vspace*{7pt}\\
 \textit{Android} garantisce il funzionamento descritto mediante l'utilizzo delle \textbf{WebView}; è importante non confondere la realtà descritta rispetto alle tipiche funzionalità condotte tramite il \textit{browser}, in questa casistica le \textit{web pages} sono attuate solamente per la visualizzazione del contenuto delle stesse, senza alcuna azione secondaria di navigazione.\vspace*{7pt}\\
 Tipicamente, all'interno di una qualsiasi applicazione sviluppata, avviene l'\textit{override} del \textit{behavior} di ogni link all'interno della \textit{WebView} tramite un \textit{WebViewClient}, sviluppato come segue.
 \begin{lstlisting}[language=JAVA]
