@@ -1,0 +1,183 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{fixltx2e}
+\usepackage{booktabs}
+\usepackage{float}  
+\usepackage{graphicx}
+\usepackage{floatflt,epsfig}
+\usepackage[margin=1in]{geometry} 
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s][\color{green!50!black}]{<!--}{-->},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red},
+  keywordstyle=\color{orange},
+  commentstyle=\color{green!50!black},
+  basicstyle=\small\ttfamily,
+  frame=single, 
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  showstringspaces=false,
+  captionpos=b,
+}
+
+\lstdefinelanguage{Java}{
+  keywords={abstract,assert,boolean,break,byte,case,catch,char,class,const,continue,default,do,double,else,enum,extends,false,final,finally,float,for,goto,if,implements,import,instanceof,int,interface,long,native,new,null,package,private,protected,public,return,short,static,strictfp,super,switch,synchronized,this,throw,throws,transient,true,try,void,volatile,while},
+  morekeywords={[2]System,out},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{blue}\bfseries,
+  keywordstyle={[2]\color{orange}\bfseries},
+  commentstyle=\color{green!70!black},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single, 
+  captionpos=b
+}
+
+\titleformat{\section}
+{\LARGE\bfseries}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\Large\bfseries}{\thesection}{1em}{}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\section*{Background Operations}
+\large
+
+\subsection*{Short Recap}
+Fino ad ora, la complessità dell'applicazioni \textit{Android} presentate accomunava un'insieme di \textit{activities}, usufruendo degli \textit{intents} affinchè le stesse possano dialogare, delle \textit{views} per la visualizzazione grafica dell'applicativo ed infine degli \textit{events} per manipolare le interazioni con l'utente.\vspace*{7pt}\\
+Tuttavia i concetti, brevemente descritti prima, sono eseguiti in \textit{foreground}; occorre quindi accertarsi di cosa accada al di sotto.     
+
+\subsection*{Notifications}
+Le \textbf{notifiche} sono messaggi provenienti dall'applicazione \textit{Android} sviluppata, tipicamente adottati per informare l'utente di certi avvenimenti. Si distinguono in due tipologie, a seconda dell'azione che si voglia conseguire:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Informativa passiva}, messaggio disposto a schermo per la sola visualizzazione
+  \item \textbf{Informativa attiva}, da cui è possibile aprire l'applicazione oppure eseguire direttamente alcune operazioni
+\end{itemize}
+Tutte le volte in cui è creata una \textit{notifica} è obbligatorio associarla ad un \textbf{canale comunicativo}, ciò avviene per due motivazioni principali. La prima ragione definisce la volontà dell'utente, stabilendo che tipo di messaggi istantanei voglia visualizzare, mentre la seconda è dettata dalla facilità di controllo mediante le impostazioni di sistema. 
+\begin{center}
+  \includegraphics*[width=0.7\textwidth]{foto1.png}
+\end{center}
+L'immagine riportata definisce appropiatamente il meccanismo di funzionamento delle \textit{notifiche}. Di seguito si riportano gli step che caratterizzano il titolo esemplificativo.
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Notification}, esecuzione della \textit{notifica} tramite l'applicazione, attuando un \textbf{PendingIntent}, ossia un gancio per acquisire la \textit{callback} di riferimento
+  \item \textbf{Notification Manager}, componente del sistema \textit{Android} responsabile della manipolazione della \textit{notifica} e della disposizione a schermo della stessa all'interno della \textit{status bar}
+  \item \textbf{Status bar}, visualizzazione della \textit{notifica} 
+\end{itemize}
+Per implementare ed inviare una notifica occorre sottostare a specifici step, cosi definiti.
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Primo step}, ottenere una referenza circoscritta al \textbf{NotificationManager}, dove in linguaggio \textit{Kotlin} si traduce in:
+  \begin{lstlisting}[language=JAVA]
+val notificationManager = NotificationManagerCompat.from(this)
+  \end{lstlisting}
+  In breve, si tratta di un'invocazione del \textit{System Service}, affinchè sia possibile comunicare al \textit{sistema operativo} dell'esecuzione di un'operazione che potrebbe avere delle conseguenze sull'intero dispositivo
+  \item \textbf{Secondo step}, creare un \textbf{canale di notifica}, attuato per le medesime motivazioni narrate precedentemente.
+  \begin{lstlisting}[language=JAVA]
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+  val CHANNEL_ID = "My Channel Id"
+  val importance = NotificationManager.IMPORTANCE_DEFAULT
+  val channel = NotificationChannel(CHANNEL_ID, "MyChannelName", importance)
+  channel.description = "My description"
+  val notificationManager = NotificationManagerCompat.from(this)
+  notificationManager.createNotificationChannel(channel)
+}
+  \end{lstlisting}
+  \item \textbf{Terzo step}, costruire il corpo del messaggio, mediante l'utilizzo del \textit{design pattern Builder}, in cui è suddivisa la costruzione dell'oggetto dalla propria visualizzazione grafica.
+  \begin{lstlisting}[language=JAVA]
+val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+  .setSmallIcon(androidx.core.R.drawable.notification_bg)
+  .setContentTitle("Remember that you will die!")
+  .setContentText("Let me explain a number of reasons why this is the case, blah, blah, blah...")
+  .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+  \end{lstlisting}
+  \item \textbf{Quarto step}, attuare il \textit{build} della \textit{notifica} ed eseguirla.
+  \begin{lstlisting}[language=JAVA]
+val myNotificationId = 0
+notificationManager.notify(myNotificationId, builder.build())
+  \end{lstlisting}
+\end{itemize}
+Nonostante, non è stato ancora approfondito il tema relativo a \textit{notifiche} che siano caratterizzate da un \textit{atteggiamento attivo}; ossia la possibilità di eseguire direttamente alcune operazioni dopo aver interagito con le comunicazioni visualizzate nella \textit{status bar}.\vspace*{7pt}\\
+A livello di codice è attuato un \textit{Pending Intent}, il quale contiene un apposito \textit{collante} che possa essere lanciato da componenti oppure elementi esterni dall'applicazione sviluppata. 
+\begin{lstlisting}[language=JAVA]
+val newIntent: Intent = Intent(this, MainActivity.javaClass)
+newIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+newIntent.putExtra("caller", "notification")
+val pendingIntent: PendingIntent = PendingIntent.getActivity (
+  this, 0, newIntent, PendingIntent.FLAG_IMMUTABLE
+)
+\end{lstlisting}
+Concludendo è importante sottolineare che tutte le notifiche sono eseguite su molteplici \textit{thread}, gestite dal \textit{sistema operativo}; la volontà di adeguare un meccanismo simile è dettata dalla potenziale possibilità che le \textit{notifiche} possano bloccare il device.
+
+\subsection*{Multithreading}
+Un'ottima pratica di programmazione \textit{Android}, prevede di assegnare una qualsiasi operazione, che richieda più di qualche millisecondo prima di terminare, ad uno specifico \textit{thread}. Infatti, tendenzialmente, ogni attività è eseguita sul \textit{main thread} assieme all'\textit{User Interface}; in assenza di una diversificazione, il contesto descritto potrebbe provocare un inadempimento dell'applicazione sviluppata.\vspace*{7pt}\\
+Per rispondere a tale necessità, le operazioni accomunate da una caratterizzazione simile a quanto riportato, sono eseguite su \textit{flussi di esecuzione} indipendenti; specificati all'interno del \textit{Manifest} oppure definiti a livello di codice durante il \textit{runtime}. Proseguendo, in questo modo, il \textit{sistema operativo} possiede la totale libertà di gestire e manipolare i molteplici processi \textit{runnati}.\vspace*{7pt}\\
+In \textit{Android} esistono tre metodi principali per la creazione di \textit{thread}, suddivisi come segue:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Extend Thread}, estendere la classe \textit{Thread}, in cui all'interno del metodo \textit{run()} è riportato il comportamento a cui il \textit{flusso di esecuzione} deve sottostare. Infine, istanziato un oggetto della classe, è richiamata la funzione \textit{start()} per decretarne l'esecuzione.  
+  \begin{lstlisting}[language=JAVA]
+public class MyThread extends Thread {
+  public MyThread() {
+    super("My Thread");
+  }
+
+  public void run() {
+    // do your stuff
+  }
+}
+\end{lstlisting}
+\begin{lstlisting}[language=JAVA]
+MyThread m = new MyThread();
+m.start();
+\end{lstlisting}
+  \item \textbf{Interface Runnable}, implementare l'interfaccia \textit{Runnable}; tuttavia questo approccio richiede che sia presente un \textbf{Thread Pool}. Un \textit{Thread Pool} è un insieme preallocato di \textit{flussi di esecuzione} che eseguono \textit{task} parallelamente, prelevate da una queue di riferimento.\vspace*{7pt}\\
+  In questo modo, nuove mansioni sono eseguite da \textit{thread} esistenti, evitando di inizializzare un numero spropositato di \textit{flussi di esecuzione}.
+  \begin{lstlisting}[language=JAVA]
+ExecutorService executorService = Executors.newFixedThreadPool(4);
+  \end{lstlisting}
+\begin{lstlisting}[language=JAVA]
+executorService.execute(new Runnable() {
+  @Override
+  public void run() {
+    // do your stuff
+  }
+});
+\end{lstlisting}
+\end{itemize}
+
+\subsection*{Message Passing}
+\dots
+
+\end{document}
