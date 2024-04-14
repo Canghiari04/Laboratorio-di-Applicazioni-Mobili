@@ -178,6 +178,87 @@ executorService.execute(new Runnable() {
 \end{itemize}
 
 \subsection*{Message Passing}
+Il \textit{main thread} è incaricato di selezionare e porre all'interno della \textit{UI} i molteplici componenti grafici; nessun \textit{flusso di esecuzione} secondario dovrebbe avere una mansione simile, poichè potrebbero generare \textit{race condition}. Tuttavia, in differenti casistiche, alcuni \textit{worker threads} potrebbero avere la necessità di comunicare il risultato ottenuto una volta terminata la propria funzione.\vspace*{7pt}\\
+È necessario stabilire delle comunicazioni fra loro, evitando di scatenare race condition derivanti da un'erronea gestione della \textit{concorrenza}.\vspace*{7pt}\\
+Di seguito sono riportate tutte le componenti necessarie per riuscire nell'intento, suddivise come da titolo esemplificativo sottostante.
+\begin{center}
+  
+\end{center}
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item Tutti i \textit{thread} che vogliano ricevere dei risultati oppure delle comunicazioni, attuano un \textbf{handler}. Un \textbf{handler} è caratterizzato da una funzione \textit{callback}, in modo tale che possa processare tutti i \textit{messaggi in entrata} mediante un proprio \textit{flusso di esecuzione}. Proseguendo, occorre che sia sviluppato un ulteriore oggetto, il quale consiste nella figura del \textbf{looper}, incaricato di conservare tutte le \textit{comunicazioni} all'interno di una \textbf{queue}.\vspace*{7pt}\\
+  A livello di codice, il comportamento descritto si traduce in:
+  \begin{lstlisting}[language=JAVA]
+public void run() {
+  Looper.prepare(); // istanza la queue dei messaggi
+
+  handler = new Handler(Looper.myLooper()) {
+    @Override
+    public void handleMessage(Message msg) {
+      // do your stuff
+    }
+  }
+
+  Looper.loop() // in attesa di ricevere messaggi
+}
+  \end{lstlisting}
+  \item Introdotta la sezione relativa al \textit{receiver}, occorre definire l'atteggiamento del \textit{sender}. Brevemente, il \textit{thread} in questione dovrebbe ottenere una referenza del \textit{ricevitore} ed inviargli il risultato.\vspace*{7pt}\\ Per cui, considerando il \textit{flusso di esecuzione} precedente oggetto della classe \textit{MyThread}, il concetto si sviluppa come segue:
+  \begin{lstlisting}[language=JAVA]
+MyThread myThread = new MyThread();
+myThread.start();
+Handler myHandler = myThread().handler; // acquisizione del handler
+  \end{lstlisting}
+  In questo modo, sarà possibile inviare un messaggio consecutivamente manipolato dal metodo \textit{handleMessage()}.
+  \begin{lstlisting}[language=JAVA]
+Message m = myThread.handler.obtainMessage(); // nuovo messaggio inviato al mHandler del thread in attesa
+m.arg1 = "Ciao, come stai?";
+myThread.handler.sendMessage(m);
+  \end{lstlisting}
+\end{itemize}
+
+\subsection*{Coroutines}
 \dots
 
+\subsection*{Services}
+Un \textbf{Service} è un componente in grado di eseguire lunghe operazioni in \textit{background}. Rappresenta in \textit{Android} un elemento simile alle \textit{Activities}, ma carente di interfaccia grafica, infatti il suo scopo principe consiste nell'esecuzione di onerose operazioni.\vspace*{7pt}\\
+Anch'esso deve essere dichiarato all'interno del \textit{Manifest}, poichè è risvegliato mediante l'utilizzo degli \textit{intents}.
+\begin{lstlisting}[language=XML]
+<service android:name=".ExampleService" />
+\end{lstlisting}
+Un \textit{servizio} garantisce un solido ambiente in grado di manipolare ed immagazzinare molteplici \textit{flussi di esecuzione}; tuttavia, qualora le operazioni associate risultino estramamente onerose, dato che è contenuto all'interno del \textit{main thread}, potrebbero provocare situazioni bloccanti per l'applicazione sviluppata. Di conseguenza, per attività che possano richiedere più di qualche millisecondo, occorre necessariamente utilizzare \textit{threads} specifici.\vspace*{7pt}\\
+Contrariamente alla sezione \textit{XML} precedente, è possibile creare un \textit{Service} da codice, attuando la seguente sintassi:
+\begin{lstlisting}[language=JAVA]
+startService(intent) // tipicamente un intent esplicito
+\end{lstlisting}  
+Proseguendo, per terminare la sua esecuzione, nuovamente a livello di codice, si utilizzano le istruzioni:
+\begin{lstlisting}[language=JAVA]
+stopSelf() // all'interno dello stesso servizio
+stopService(intent) // da ulteriori componenti
+\end{lstlisting}  
+
+\subsection*{Broadcast Receiver}
+Un \textbf{Broadcast Receiver} è un componente che si attiva solamente quando accadono determinati \textit{eventi}; in questa sezione il termine \textbf{event} è adeguato come sinonimo di \textit{intent}.\vspace*{7pt}\\
+Tipicamente è dichiarato all'interno del \textit{Manifest}
+\begin{lstlisting}[language=XML]
+<application>
+  <receiver class="SMSReceiver">
+    <intent-filter>
+      <action android:value="android.provider.Telephony.SMS_RECEIVED" />
+    <intent-filter>
+  </receiver>
+</application>
+\end{lstlisting}
+oppure definito a livello di codice
+\begin{lstlisting}[language=JAVA]
+receiver = new BroadcastReceiver() {...}
+
+protected void onResume() {
+  registerReceiver(receiver, new IntentFilter(Intent.ACTION_TIME_TICK));
+}
+
+protected void onPause() {
+  unregisterReceiver(receiver);
+}
+\end{lstlisting}    
+La differenza principale è dovuta al fatto che, se definito a livello di codice, non potrà essere eseguito qualora l'applicazione sia chiusa.
 \end{document}
