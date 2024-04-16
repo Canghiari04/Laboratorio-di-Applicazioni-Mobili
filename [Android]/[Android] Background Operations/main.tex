@@ -217,7 +217,65 @@ myThread.handler.sendMessage(m);
 \end{itemize}
 
 \subsection*{Coroutines}
-\dots
+Gestire la \textit{concorrenza} e le \textit{comunicazioni} tra molteplici \textit{flussi di esecuzione} non è banale e potrebbe scatenare differenti complessità implementative.\vspace*{7pt}\\
+\textit{Android}, assieme a \textit{Kotlin}, mette a disposizione un ambiente di programmazione più semplice rispetto agli esempi mostrati fino ad ora, dettato dalla presenza delle \textbf{Coroutines}.\vspace*{7pt}\\
+Una \textit{Coroutine} è un'istanza di una \textit{computazione sospendibile}. Il suo atteggiamento è simile a quello di un \textit{thread}, in grado di eseguire sezioni di codice. Inoltre non è associata ad alcun \textit{flusso di esecuzione} specifico, può essere sospesa ed assegnata ad uno qualsiasi.\vspace*{7pt}\\
+La definizione riportata esprime il concetto di \textbf{concorrenza strutturata}, ossia promuove la volontà di \textit{Android} di ovviare a tutti i potenziali errori derivanti ad un erroneo codice implementato.\vspace*{7pt}\\
+Nonostante la similitudine, è presente un importante numero di caratteristiche che differenzia una \textit{Coroutine} da un \textit{thread}; contraddistinte in tre fattori principali, cosi suddivisi:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Coroutine Scope}, rappresenta un ambiente che tiene traccia dell'istanze di computazione create ed offre differenti azioni affinchè sia possibile interagire con le stesse
+  \item \textbf{Coroutine Context}, indica l'insieme dei metadati associati alla \textit{Coroutine} circoscritta; a titolo esemplificativo si evidenzia la presenza del \textit{dispatcher}, colui che è incaricato di eseguire l'istanza computazionale
+  \item \textbf{Coroutine Job}, manipola una \textit{Coroutine}, memorizzando una sua referenza all'interno di una variabile d'istanza
+\end{itemize}
+\begin{lstlisting}[language=JAVA]
+val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+
+fun myBlockingFunction() { /* do your blocking stuff */ }
+
+val job: Job = scope.launch(Dispatchers.IO) {
+  delay(100) // function that blocks the coroutine, not the thread
+  myBlockingFunction()
+}
+\end{lstlisting}
+Di seguito sono descritti due punti principali dell'esempio proposto, contraddistinti in:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item Tramite lo \textit{scope} viene creata e lanciata una \textit{Coroutine}, ma non eseguita, tipicamente riportata all'interno del \textit{Main thread}, si osservi la sintassi indicata dal \textit{dispatcher}
+  \item Mediante il \textit{job} è richiamata la \textit{Coroutine} lanciata precedentemente, la quale consiste in un oggetto \textit{runnable}, affinchè sia possibile definire dove l'istanza computazionale debba essere eseguita. A titolo esemplificativo, la \textit{Coroutine} è stata indotta all'interno di un flusso di esecuzione specializzato in operazioni di \textit{lettura} e di \textit{scrittura} 
+\end{itemize}
+Tuttavia, in certe circostanze, non è stabilito a priori quale sia la sezione di codice sviluppato che potrebbe bloccare l'intera applicazione; perciò entra in gioco la keyword \textbf{suspend}.
+Questo approccio impone al \textit{caller} di richiamare la funzione mediante una \textit{Coroutine}. In questo modo, qualsiasi sia l'operazione erronea, sarà possibile interrompere l'esecuzione della \textit{sezione di codice}, senza alcuna ripercussione ai danni della \textit{User Interface}.
+\begin{lstlisting}[language=JAVA]
+suspend fun myBlockingFunction (): String {
+  return withContext(Dispatchers.IO) { /* Blocking Code */ }
+}
+
+/* launch a coroutine in the main thread */
+scope.launch {
+  delay(100)
+  val result = myBlockingFunction() // execute it in a IO thread and wait here until it finishes
+  /* Do stuff with result in the main thread */
+}
+\end{lstlisting}
+Inoltre, grazie al meccanismo delle \textit{Coroutines}, è possibile variare il \textit{contesto computazionale} di un blocco di codice, in favore di azioni mirate per l'aggiornamento della \textit{User Interface}.
+\begin{lstlisting}[language=JAVA]
+/* launch a coroutine in the main thread */
+scope.launch {
+  withContext(Dispatchers.IO) { /* Do your database operations */ }
+  withContext(Dispatchers.Main) { /* Update UI */ }
+}
+\end{lstlisting}
+Similmente a quanto avviene tramite le \textit{promise} di \textit{JavaScript}, è possibile effettuare della chiamate \textit{asincrone} senza che le \textit{Coroutines} siano sospese. Tuttavia, le keyword \textbf{async} e \textbf{await} possono essere attuate solamente all'interno dello \textit{Scope}.
+\begin{lstlisting}[language=JAVA]
+scope.launch {
+  val deferred: Deferred<Unit> = async { myBlockingFunction() }
+  /* CODE BLOCK A */
+  deferred.await()
+  /* CODE BLOCK B */
+}
+\end{lstlisting}
+Rispetto allo sketch di codice proposto, la \textit{Coroutine} non sarà, in questa particolare casistica, sospesa a causa della \textit{myBlockingFunction()}, poichè richiamata \textit{asincronicamente}; inoltre, è eseguita all'interno di un \textit{thread separato}, pertanto il blocco di codice sottostante, \textit{Block Code A}, sarà consecutivamente svolto all'interno del \textit{Main thread}. Concludendo, data la presenza della keyword \textit{await}, la computazione del \textit{Block Code B} sarà eseguita solamente qualora sia restituito il risultato della funzione bloccante.
 
 \subsection*{Services}
 Un \textbf{Service} è un componente in grado di eseguire lunghe operazioni in \textit{background}. Rappresenta in \textit{Android} un elemento simile alle \textit{Activities}, ma carente di interfaccia grafica, infatti il suo scopo principe consiste nell'esecuzione di onerose operazioni.\vspace*{7pt}\\
