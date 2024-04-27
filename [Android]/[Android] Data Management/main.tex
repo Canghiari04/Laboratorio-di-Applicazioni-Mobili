@@ -1,0 +1,313 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{fixltx2e}
+\usepackage{booktabs}
+\usepackage{float}  
+\usepackage{graphicx}
+\usepackage{floatflt,epsfig}
+\usepackage[margin=1in]{geometry} 
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s][\color{green!50!black}]{<!--}{-->},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red},
+  keywordstyle=\color{orange},
+  commentstyle=\color{green!50!black},
+  basicstyle=\small\ttfamily,
+  frame=single, 
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  showstringspaces=false,
+  captionpos=b,
+}
+
+\lstdefinelanguage{Java}{
+  keywords={abstract,assert,boolean,break,byte,case,catch,char,class,const,continue,default,do,double,else,enum,extends,false,final,finally,float,for,goto,if,implements,import,instanceof,int,interface,long,native,new,null,package,private,protected,public,return,short,static,strictfp,super,switch,synchronized,this,throw,throws,transient,true,try,void,volatile,while},
+  morekeywords={[2]System,out},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{blue}\bfseries,
+  keywordstyle={[2]\color{orange}\bfseries},
+  commentstyle=\color{green!70!black},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single, 
+  captionpos=b
+}
+
+\titleformat{\section}
+{\LARGE\bfseries}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\Large\bfseries}{\thesection}{1em}{}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\section*{Data Management}
+\large
+\subsection*{SQLite}
+\textit{Android} permette ad una qualsiasi applicazione sviluppata di usufruire di molteplici \textit{database}, adoperando il linguaggio \textit{SQL} per formulare interrogazioni alle collezioni di dati.\vspace*{7pt}\\
+Rispetto a quanto riportato, il framework in questione mette a disposizione specifiche interfacce affinchè sia possibile interagire con i dati mantenuti all'interno delle tabelle. L'utilizzo di database relazionali è fortemente consigliato qualora non sia sempre possibile garantire connettività; pertanto, mediante le collezioni di dati, è mantenuta una copia dell'informazioni ritenute fondamentali per il conseguimento dell'obiettivo dell'applicazione sviluppata.\vspace*{7pt}\\
+Tipicamente è attuato un certo paradigma per estrapolare informazioni da un database; innanzitutto, occorre creare una classe \textit{DBHelper} che estenda l'interfaccia \textit{SQLiteHelper}, la quale svilupperà l'insieme dei metodi necessari per manipolare la base di dati.\vspace*{7pt}\\
+Una buona pratica, qualora si interagisca con un \textit{database}, consiste nella definizione di un \textit{companion object} che identifica tutte le colonne della collezione circoscritta.
+\begin{lstlisting}[language=JAVA]
+companion object StudentContract {
+  object StudentEntry : BaseColumns {
+    const val TABLE_NAME = "students"
+    const val COLUMN_NAME = "name"
+    const val COLUMN_CLASS = "class"
+    const val COLUMN_GRADE = "grade"
+  }
+}
+\end{lstlisting}
+Successivamente avviene l'implementazione della classe \textit{SQLiteHelper}, agendo, mediante \textit{override}, sulla funzione \textit{onCreate()}.
+\begin{lstlisting}[language=JAVA]
+class DbHelper(context: Context) :
+  SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+  
+  override fun onCreate(db: SQLiteDatabase) {
+    db.execSQL(
+      "CREATE TABLE ${StudentEntry.TABLE_NAME} (${BaseColumns._ID} INTEGER PRIMARY KEY, " +
+      "${StudentEntry.COLUMN_NAME} TEXT, ${StudentEntry.COLUMN_CLASS} TEXT," +
+      "${StudentEntry.COLUMN_GRADE} TEXT)"
+    )
+  }
+  companion object { const val DATABASE_NAME = "Students.db", const val DATABASE_VERSION = 1 }
+}
+\end{lstlisting}
+Inoltre, proseguendo, possono essere adeguate le tipiche operazioni, attuando qualche accorgimento a seconda dell'azione che voglia essere conseguita, definite come segue:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Insert}
+  \begin{lstlisting}[language=JAVA]
+val db = dbHelper.writableDatabase // riferimento "modificabile" del database
+
+/* sintassi propria per l'inserimento di record */
+val values = ContentValues().apply { 
+  put(StudentEntry.COLUMN_NAME, "Mario Rossi")
+  put(StudentEntry.COLUMN_CLASS, "LAM")
+  put(StudentEntry.COLUMN_GRADE, "30")
+}
+
+val newRowId = db?.insert(StudentEntry.TABLE_NAME, null, values)
+  \end{lstlisting}
+  \item \textbf{Update}
+  \begin{lstlisting}[language=JAVA]
+val db = dbHelper.writableDatabase
+
+val values = ContentValues().put(StudentEntry.COLUMN_GRADE, "29")
+
+/* definita dipendency injection, data dal carattere "?" */
+val selection = "${StudentEntry.COLUMN_NAME} LIKE ?"
+val selectionArgs = arrayOf("Mario Rossi") // bind dei params
+val count = db.update(
+    StudentEntry.TABLE_NAME,
+    values,
+    selection,
+    selectionArgs)
+  \end{lstlisting}
+  \item \textbf{Delete}
+  \begin{lstlisting}[language=JAVA]
+val db = dbHelper.readableDatabase
+val selection = "${StudentEntry.COLUMN_NAME} LIKE ?"
+val selectionArgs = arrayOf("Mario Rossi")
+
+val deletedRows = db.delete(StudentEntry.TABLE_NAME, selection, selectionArgs)
+  \end{lstlisting}
+  \item \textbf{Query}
+  \begin{lstlisting}[language=JAVA]
+val db = dbHelper.readableDatabase
+
+val projection = arrayOf(BaseColumns._ID, StudentEntry.COLUMN_NAME)
+    
+val cursor = db.query( 
+  StudentEntry.TABLE_NAME,
+  projection, 
+  "${StudentEntry.COLUMN_GRADE} = ?",
+  arrayOf("30"), 
+  null, 
+  null, 
+  null
+)
+  \end{lstlisting}
+\end{itemize}
+\textit{Nota}: qualsiasi operazione che richieda l'interazione con un database, può essere potenzialmente bloccante per l'intero sistema ideato, pertanto è necessario delegarne l'esecuzione a \textit{threads} oppure \textit{coroutine}.\vspace*{7pt}\\
+Solitamente è restituito un \textbf{Cursor} ad ogni query effettuata, il quale adotta un meccanismo simile ad un \textit{iteratore}; permette di scorrere il risultato ottenuto per ogni record che componga la tabella risultante dall'interrogazione attuata.
+\begin{lstlisting}[language=JAVA]
+val items = mutableListOf<String>()
+with(cursor) {
+  while(moveToNext()) {
+    val item = getString(getColumnOrThorw(StudentEntry.COLUMN_NAME))
+    items.add(item)
+  }
+}
+cursor.close() // molto simile alla sintassi di un iterator in Java
+\end{lstlisting}
+Concludendo, onde evitare errori, occorre chiudere la connessione con il \textit{database} di riferimento, affinchè sia possibile accedere nuovamente all'informazioni stilate al suo interno.
+\begin{lstlisting}[language=JAVA]
+override fun onDestroy() {
+  deHelper.close()
+  super.onDestroy()
+}
+\end{lstlisting}
+
+\subsection*{Content Providers}
+Un \textbf{content provider} definisce un sistema per accedere a dati condivisi, attuato principalmente per rendere disponibili informazioni ad altre applicazioni. Il proprio comportamento è simile ad un servizio \textit{Web REST}, pertanto adopera \textit{Uniform Resource Identificator} per definire il metodo di acquisizione delle risorse; infatti, lo stesso, è visualizzato da componenti esterni come un \textit{database} a cui dettare \textit{interrogazioni}.\vspace*{7pt}\\
+Consuetudine principe di un \textit{content provider} promuove l'acquisizione di dati da parte di ulteriori applicazioni installate nel dispositivo, tipicamente ritraggono servizi già presenti al suo interno; esempi consistono nell'elenco delle sveglie impostate dall'utente oppure l'accesso ai contatti memorizzati in rubrica. In queste casistiche è obbligatorio adoperare un \textit{provider}, publicizzato mediante \textit{URI} definiti, a loro volta, all'interno del \textit{Manifest}.\vspace*{7pt}\\
+Di seguito, a titolo esemplificativo, è sviluppato uno dei differenti approcci per acquisire i contatti memorizzati in rubrica; tuttavia, la realtà descritta, richiede che sia formulato un permesso all'interno del \textit{Manifest}, dato che si manipolano dati sensibili dell'utente, definito sia a livello di lettura che di scrittura.
+\begin{lstlisting}[language=XML]
+<uses-permission android:name="android.permission.READ_CONTACTS"/>
+\end{lstlisting}
+\begin{lstlisting}[language=JAVA]
+cursor = contentResolver.query(
+  ContactsContract.Contacts.CONTENT_URI,
+  null,
+  null,
+  null,
+  null
+)
+
+while (cursor.moveToNext()) {
+  val item = cursor.getString(
+      cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME))
+}
+\end{lstlisting}
+Come da sketch di codice, si visualizza la terminologia descritta nella parte introduttiva della sezione; infatti, è formulata una query affinchè sia possibile acquisire i contatti memorizzati in rubrica ed è restituito un \textit{cursore} per scorrere il risultato ottenuto. A tutti gli effetti è riportata la manipolazione di un \textit{database}.
+
+\subsection*{Room}
+\textbf{Room} simboleggia un insieme di librerie attuate per strutturare interazioni con \textit{database relazionali}. Definisce un \textit{layer} astratto posto al di sopra di \textit{SQLite}; tendenzialmente attuato qualora il progetto sviluppato sia sufficientemente complesso.\vspace*{7pt}\\
+È caratterizzato da tre componenti principali, contraddistinti in:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Entities}, tabelle che compongono il database
+  \item \textbf{DAOs}, acronimo di \textit{Data Access Objects}, interfaccia contenente l'elenco dei metodi necessari per interrogare e manipolare il database
+  \item \textbf{Database}, punto principale di accesso alle risorse contenute
+\end{itemize}
+Lo scopo di \textit{Room} consiste nella previa definizione del codice di accesso e di sviluppo in completa autonomia, consecutivo a specifiche direttive, in modo tale che le librerie siano in grado di codificare il comportamento richiesto durante la fase di compilazione.\vspace*{7pt}\\
+Per usufruire dello strumento è necessario dichiarare e stabilire una \textit{classe astratta} che estenda la classe \textit{RoomDatabase}.
+\begin{lstlisting}[language=JAVA]
+@Database(entities = [Entity1::class, Entity2::class], version = 1, exportSchema = false)
+abstract class myDatabase : RoomDatabase() {
+  abstract fun entity1Dao() : Entity1Dao
+  abstract fun entity2Dao() : Entity2Dao
+  abstract fun twoEntitiesDao() : TwoEntitiesDao
+}
+\end{lstlisting}
+Mediante i \textit{DAOs}, le librerie di \textit{Room} sono in grado di convertire le interazioni con il \textit{database} in vere e proprie classi attinenti al progetto sviluppato, semplicemente dichiarando i parametri di \textit{input} e di \textit{output}.
+\begin{lstlisting}[language=JAVA]
+@Dao
+interface MyDao {
+  @QueryType(params...)
+  fun dbMethod(params): ReturnType
+}
+\end{lstlisting}  
+Proseguendo, per ciascuna \textit{Entity} è creata ed associata una tabella del database, in cui ogni \textit{field} referenzia ad un dominio della collezione, ad eccezione delle colonne demarcate con la key-word \textit{@ignore}. 
+\begin{lstlisting}[language=JAVA]
+@Entity(tablename = "my_entity") 
+class Entity1 (
+  @PrimaryKey
+  @NonNull
+  @columnInfo(name = "index")
+  var id: String,
+  var field1: String,
+  @Ignore
+  var temp: String
+)
+\end{lstlisting}
+Concludendo, anche in questa casistica, è bene adeguare \textit{coroutine} oppure \textit{thread pool} per l'implementazione e sviluppo mediante \textit{DAOs}.
+
+\subsection*{HTTP}
+\textbf{HTTP} è il protocollo di rete per il trasferimento di dati, il quale si avvale di numerosi modelli di comunicazione. Storicamente \textit{Android} supporta due librerie implementative principali, contraddistinte in:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{HTTPClient}, estensione completa del protocollo \textit{HTTP} designata per attività di navigazione sul Web
+  \item \textbf{HTTPUrlConnection}, implementazione adeguata per il trasferimento di dati mediante un'architettura \textit{client-server}
+\end{itemize}
+In entrambe le casistiche occorre gestire le connessioni attraverso \textit{flussi di esecuzione} separati.\vspace*{7pt}\\
+A titolo esemplificativo sono riportati gli step necessari per imbastire correttamente una connessione \textit{HTTP}, suddivisi come segue:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item Definire una nuova connessione \textit{HTTPUrlConnection} richiamando la funzione \textit{openConnection()}
+  \begin{lstlisting}[language=JAVA]
+val url: URL = URL("https://www.android.com/")
+val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
+  \end{lstlisting}
+  \item Definire le caratteristiche della \textit{request}; qualora debba essere utilizzato il verbo \textit{POST} occorre invocare il metodo \textit{setDoOutput()} 
+  \begin{lstlisting}[language=JAVA]
+urlConnection.doOutput = true
+urlConnection.requestMethod = "POST"
+urlConnection.setChunkedStreamingMode(0)
+val out: OutputStream = BufferedOutputStream(urlConnection.outputStream)
+out.write("YourPostInput".toByteArray())
+  \end{lstlisting}
+  \item Lettura della \textit{response} corrisposta alla richiesta precedente; tipicamente l'oggetto risposta contiene \textit{data} e \textit{header}, mentre per accedere al \textit{body} è necessario manipolare lo \textit{stream} mediante \textit{getInputStream()}
+  \begin{lstlisting}[language=JAVA]
+inStream: InputStream = BufferedInputStream(urlConnection.inputStream);
+  \end{lstlisting}
+  \item Conclusa la lettura della \textit{response} è norma chiudere la connessione 
+  \begin{lstlisting}[language=JAVA]
+urlConnection.disconnect()
+  \end{lstlisting}
+\end{itemize}
+
+\subsection*{Volley}
+\textbf{Volley} è una libreria attuata per elaborare azioni \textit{HTTP}. Possiede differenti \textit{features}, in grado di gestire autonomamente meccanismi di \textit{caching} e \textit{chiamate asincrone}.\vspace*{7pt}\\
+Le operazioni di rete sono molto onerose per i dispositivi, in termini di tempo e batteria, causate dal continuo traffico dati. Tali motivazioni richiedono una serie di attività mirate ad ottimizzare le prestazioni del device, come stabilire una cache delle richieste effettuate oppure adeguare le operazioni \textit{HTTP} in determinate circostanze.\vspace*{7pt}\\
+\textit{Volley} promuove un atteggiamento simile a quanto riportato; quando il \textit{client} formula una \textit{request}, il sistema di librerie si accerta che la stessa sia stata già effettuata, supervisionando la \textit{queue} di richieste. In caso affermativo sarà restituita la \textit{response} in locale, altrimenti verrà effettivamente effettuata la richiesta.\vspace*{7pt}\\
+Per usufruire dei meccanismi di \textit{Volley} occorre aggiungere le proprie librerie a \textit{gradle}.
+\begin{lstlisting}[language=JAVA]
+implementation 'com.android.volley:volley:1.1.1'
+\end{lstlisting}   
+Installate le librerie, affinchè sia possibile formulare una \textit{request} ad un determinato servizio \textit{HTTP}, occorre definire i seguenti comandi
+\begin{lstlisting}[language=JAVA]
+RequestQueue queue = Volley.newRequestQueue(this);
+StringRequest stringRequest = new StringRequest(Request.Method.GET, baseUrl, 
+  new Response.Listener<String>() {
+    @Override
+    public void onResponse(String response) { /* do your stuff */ } 
+  }, new Response.ErrorListener() {
+    @Override
+    public void onErrorResponse(VolleyError error) { /* do your stuff */ } 
+  });
+queue.add(stringRequest);
+\end{lstlisting}
+Inoltre, mediante le stesse librerie, è possibile personalizzare gli \textit{header} attuando l'\textit{override} della funzione \textit{getHeaders()}.
+\begin{lstlisting}[language=JAVA]
+{
+  @Override
+  public Map<String, String> getHeaders() {
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("x-vacationtoken", "secre_token");
+    params.put("content-type", "application/json");
+    return params;
+  }
+}
+\end{lstlisting}
+\end{document}
