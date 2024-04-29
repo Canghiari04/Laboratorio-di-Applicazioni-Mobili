@@ -1,0 +1,150 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{fixltx2e}
+\usepackage{booktabs}
+\usepackage{float}  
+\usepackage{graphicx}
+\usepackage{floatflt,epsfig}
+\usepackage[margin=1in]{geometry} 
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinelanguage{XML}
+{
+  morestring=[b]",
+  morestring=[s]{>}{<},
+  morecomment=[s]{<?}{?>},
+  morecomment=[s][\color{green!50!black}]{<!--}{-->},
+  stringstyle=\color{blue},
+  identifierstyle=\color{red},
+  keywordstyle=\color{orange},
+  commentstyle=\color{green!50!black},
+  basicstyle=\small\ttfamily,
+  frame=single, 
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  showstringspaces=false,
+  captionpos=b,
+}
+
+\lstdefinelanguage{Java}{
+  keywords={abstract,assert,boolean,break,byte,case,catch,char,class,const,continue,default,do,double,else,enum,extends,false,final,finally,float,for,goto,if,implements,import,instanceof,int,interface,long,native,new,null,package,private,protected,public,return,short,static,strictfp,super,switch,synchronized,this,throw,throws,transient,true,try,void,volatile,while},
+  morekeywords={[2]System,out},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color{blue}\bfseries,
+  keywordstyle={[2]\color{orange}\bfseries},
+  commentstyle=\color{green!70!black},
+  stringstyle=\color{red},
+  showstringspaces=false,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  frame=single, 
+  captionpos=b
+}
+
+\titleformat{\section}
+{\LARGE\bfseries}{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\Large\bfseries}{\thesection}{1em}{}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\section*{Geolocation}
+\large
+La \textbf{geolocalizzazione} è una delle caratteristiche principali che rendono uniche le applicazioni per dispositivi mobili; spesso il termine citato è utilizzato in relazione all'espressione \textit{context-awareness}.\vspace*{7pt}\\
+Un qualsiasi progetto è definito \textit{context aware} qualora la possibilità di eseguire la propria computazione dipenda strettamente dal contesto. Pertanto, lo sviluppo di applicazioni mobili, deve conseguire una volontà prestabilita, ossia rendere la computazione indipendente da qualsiasi realtà, descrivendone in questo modo il più ampio spettro d'azione. Il successo di un'applicazione dipende strettamente dalle dipendenze in cui opera.\vspace*{7pt}\\
+\textbf{GPS} è l'acronimo di \textit{Global Positioning System}, un sistema complesso basato su flotte di satelliti, i quali trasmettono periodicamente comunicazioni relative alle proprie posizioni ed orari atomici. I segnali sono acquisiti ed elaborati dai device, i quali sono in grado di calcolare la propria posizione posta sulla proiezione del pianeta Terra. Maggiore è il numero di segnali ricevuti migliore risulterà l'accuratezza della posizione.\vspace*{7pt}\\
+In \textit{Android} il \textit{location manager} è la figura responsabile del calcolo relativo alla posizione, tale per cui, se dovesse variare, lo stesso meccanismo inoltrerà notifiche all'intero sistema ideato. Trattandosi di un dato estremamente sensibile, occorre definire i permessi a livello \textit{Manifest}. Sono contraddistinte tre tipologie di \textit{localizzazione}, suddivise in:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Access\_Fine\_Location}, abilita l'accesso alla posizione con la migliore accuratezza possibile
+  \item \textbf{Access\_Coarse\_Location}, abilita l'accesso alla posizione del dispositivo calcolata mediante \textit{Wi-fi} oppure dalla \textit{localizzazione cellulare}
+  \item \textbf{Access\_Background\_Location}, abilita l'accesso alla posizione anche in circostanze in cui l'applicazione non sia adoperata
+\end{itemize}
+Proseguendo, sono attuati due metodi principali per gestire la \textit{geolocalizzazione}; entrambi sono valide alternative, tuttavia la prima presentata è caratterizzata da un elevato consumo di batteria.\vspace*{7pt}\\
+\textbf{Location Listener} è il primo dei due citati. Il proprio funzionamento prevede una richiesta \textit{update} periodica al \textit{location manager}; quest'ultimo, adeguando le operazioni necessarie, comunicherà il risultato alla richiesta avanzata. Un tipico problema riguarda circostanze in cui differenti entità esterne dovessero richiedere la \textit{geolocalizzazione}, aumentando spropositamente il carico computazionale.\\
+Innanzitutto è necessario creare un \textit{listener} che possa attendere notifiche qualora vari la posizione del dispositivo.
+\begin{lstlisting}[language=JAVA]
+val locationListener = LocationListener{location: Location -> 
+  // do your stuff
+}
+\end{lstlisting}
+Tuttavia, come è stato già espresso prima, il \textit{location manager} potrebbe essere sovraccaricato di richieste inerenti alla \textit{localizzazione}, con conseguente crash dell'applicazione. Proprio per questa ragione è stato introdotto un approccio \textit{opportunistico}, dettato dalla possibilità di fondere le molteplici \textit{request}.\vspace*{7pt}\\
+Un paradigma simile richiede lo sviluppo di un \textbf{FusedLocationProvider}, il quale gestisce le richieste e ottimizza l'accesso al \textit{GPS}. Il primo passo richiede l'istanziazione del servizio.
+\begin{lstlisting}[language=JAVA]
+val fusedLocationProvideClient = LocationServices.getFusedLocationProviderClient(this)
+\end{lstlisting}
+Successivamente è necessario ottenere l'ultima \textit{locazione conosciuta}.
+\begin{lstlisting}[language=JAVA]
+fusedLocationClient.lastLocation.addOnSuccessListener { location : Location? -> 
+  // got last known location
+}
+\end{lstlisting}
+Infine occorre definire una funzione di \textit{callback} che possa comunicare cambiamenti di locazione.
+\begin{lstlisting}[language=JAVA]
+val locationCallback = object:LocationCallback() {
+  override fun onLocationResult(p0:LocationResult) {
+    for(location in p0.locations) {
+      // update with location data
+    }
+  }
+}
+\end{lstlisting}
+Naturalmente, dato il dispendio computazionale, l'insieme di \textit{request} relative alla \textit{geolocation} sono eseguite su \textit{flussi di esecuzioni indipendenti}, progettati in modo tale che possano risveglliare il \textit{main thread}.
+
+\subsection*{Geofencing}
+Il termine \textbf{Geofencing} rappresenta una determinata metodica di sviluppo, tale per cui l'applicazione è in grado di percepire qualora l'utente dovesse trovarsi in specifiche località. Una caratteristica del genere è capace di rendere un progetto sempre più indipendente, incline alla definizione \textit{context-awareness}.\vspace*{7pt}\\
+Adopera il modulo \textit{Location Services}, posto in maniera tale che possa comunicare ad un \textit{Listener} qualora accada un certo evento; secondo questo sviluppo, è necessario abilitare l'accesso alla posizione corrente del dispositivo anche quando l'applicazione installata non sia utilizzata.\vspace*{7pt}\\
+Prima di tutto occorre ottenere la posizione corrente dell'utente, mediante:
+\begin{lstlisting}[language=JAVA]
+val geofencingClient = LocationServices.getGeofencingClient(this)
+\end{lstlisting}
+Proseguendo, il passo successivo consiste nella definizione dei "recinti geografici", implementati tramite l'ausilio del design pattern \textit{Builder}.
+\begin{lstlisting}[language=JAVA]
+geofenceList.add(Geofence.Builder()
+  .setRequestId(myId)
+  .setCircularRegion(myLatitude, myLongiutude, myRadius)
+  .seTexpirationDuration(myDuration)  
+  .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
+  .build())
+\end{lstlisting}
+Infine, è inserita la lista precedente all'interno di una richiesta, rendendola effettivamente attiva.
+\begin{lstlisting}[language=JAVA]
+val geofencingRequest = GeofencingRequest.Builder().apply {
+  setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+  addGeofences(geofenceList)
+}.build()
+\end{lstlisting}
+\begin{lstlisting}[language=JAVA]
+geofencingClient?.addGeofences(geofencingRequest, pendingIntent)?.run{
+  addOnSuccessListener { /* do your stuff */ }
+  addOnFailureListener { /* do your stuff */ } 
+}
+\end{lstlisting}
+Nota a margine è inerente all'intento passato come input alla funzione \textit{addGeofences()}; il fatto che sia un \textit{pendingIntent} è dettato dalla possibilità che l'attività in questione possa operare anche in situazioni in cui l'applicazione è chiusa. 
+
+\subsection*{Google Maps}
+\dots
+
+\end{document}
