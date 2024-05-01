@@ -144,7 +144,43 @@ geofencingClient?.addGeofences(geofencingRequest, pendingIntent)?.run{
 \end{lstlisting}
 Nota a margine è inerente all'intento passato come input alla funzione \textit{addGeofences()}; il fatto che sia un \textit{pendingIntent} è dettato dalla possibilità che l'attività in questione possa operare anche in situazioni in cui l'applicazione è chiusa. 
 
-\subsection*{Google Maps}
-\dots
+\subsection*{Maps}
+Le mappe sono uno strumento estremamente importante per rendere pervasiva un'applicazione. Differenti sono le alternative che possono soddisfare una richiesta simile, come \textit{MapBox}, \textit{OsmDroid} oppure \textit{Google Maps}.\vspace*{7pt}\\
+Per usufruire dei servizi dati da \textit{Google Maps} è necessario seguire i seguenti step:
+\begin{itemize}[label={-}]
+  \itemsep0em
+  \item \textbf{Step 1}, installare e impostare \textit{Google Play Service SDK}
+  \item \textbf{Step 2}, ottenere una chiave \textit{Google Play API} valida per utilizzare la libreria
+  \item \textbf{Step 3}, configurare la propria applicazione affinchè possa utilizzare \textit{SDK} di \textit{Google Maps}. Ciò avviene specificando all'interno della sezione \textit{meta} del \textit{Manifest} la \textit{Key API} ottenuta precedentemente. 
+  \begin{lstlisting}[language=XML]
+<meta-data
+  android:name="com.google.android.gms.version"
+  android:value="@integer/google_play_services_version"/>
+  \end{lstlisting}
+  \begin{lstlisting}[language=XML]
+<meta-data
+  android:name="com.google.android.geo.API_KEY"
+  android:value="API_activation_key"/>
+  \end{lstlisting}
+\end{itemize}
+Tipicamente \textit{Google Maps} all'interno del progetto elaborato si riduce in un \textbf{fragment}, ossia una porzione modulare dell'interfaccia utente di una certa attività, il quale implementa la classe \textit{SupportMapFragment}.\vspace*{7pt}\\
+Pertanto, è riportato all'interno di un'\textit{attività} un \textit{MapFragment}, come da \textit{XML} sottostante.
+\begin{lstlisting}[language=XML]
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/map"
+  android:name="com.google.android.gms.maps.SupportMapFragment"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"/>
+\end{lstlisting}
+Successivamente è formulata la richiesta affinchè il \textit{fragment} possa disegnare la mappa.
+\begin{lstlisting}[language=JAVA]
+val mapFragment = supportFragmentManager.findFragmentById(R.id.map)
+  as? SupportMapFragment
+mapFragment?.getMapAsync(this)
+\end{lstlisting}
+Proseguendo, la mappa è poi immessa all'interno di un oggetto \textit{Google Map} dedicato, restituito mediante una funzione di callback.
+\begin{lstlisting}[language=JAVA]
+class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+\end{lstlisting}
 
 \end{document}
